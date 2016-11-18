@@ -9,7 +9,13 @@ class PersistableClassificationModel(object):
     """
     def __init__(self, output_dir, origin):
         self.originModel = origin
-        self.path_to_persist = os.path.join(output_dir, '{0}/classifier-{0}.mdl'.format(datetime.datetime.now()))
+
+        if not os.path.isdir(output_dir):
+            os.mkdir(output_dir)
+
+        self.path_to_persist = os.path.join(
+            output_dir,
+            'model-{0}.mdl'.format(datetime.datetime.now()).replace(":", "-"))
 
     def persist(self):
         """

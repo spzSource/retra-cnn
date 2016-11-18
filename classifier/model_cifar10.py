@@ -23,3 +23,6 @@ class Cifar10ClassificationModel(object):
         training_set, _ = cifar10.load_data()
         self.originModel.train(training_set)
         return self
+
+    def persist(self):
+        self.originModel.persist()
