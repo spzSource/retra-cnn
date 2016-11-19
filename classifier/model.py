@@ -2,13 +2,18 @@ import numpy as np
 
 from keras.optimizers import SGD
 from keras.models import Sequential
-from keras.layers import Convolution2D, Dense, Flatten, MaxPooling2D, AveragePooling2D, AveragePooling1D
+from keras.layers import \
+    Dense, \
+    Flatten, \
+    Convolution2D, \
+    MaxPooling2D, \
+    AveragePooling2D
 
 
 class ClassificationModel(object):
     """
     Classification classifier.
-    It is a convolutional neural network which is recieve image on input
+    It is a convolution neural network which is receive image on input
     and returns the array [0..9] with possibilities of belonging for such classes.
     """
 

@@ -1,3 +1,3 @@
-from model import *
-from model_cifar10 import *
-from model_persistable import *
+from classifier.model import *
+from classifier.model_cifar10 import *
+from classifier.model_persistable import *
