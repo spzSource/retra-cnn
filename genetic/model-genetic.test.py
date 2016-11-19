@@ -65,18 +65,24 @@ class GeneticClassificationModelTest(unittest.TestCase):
                 filter_size = random.randint(2, 8)
                 filters_count = random.randint(2, 16)
                 chromosome.append((layer_type, [filters_count, filter_size]))
+                chromosome.append(2)
 
             if layer_type == 2:
-                chromosome.append(layer_type)
+                if len(chromosome) > 0 and not chromosome[-1] == 2:
+                    chromosome.append(layer_type)
 
             if layer_type == 3:
                 layer_size = random.randint(32, 4096)
                 chromosome.append((layer_type, [layer_size]))
+                chromosome.append(2)
 
             if layer_type == 4:
                 pooling_size = random.randint(2, 8)
                 chromosome.append((layer_type, [pooling_size]))
+                chromosome.append(2)
 
+        if not chromosome[-1] == 2:
+            chromosome.append(2)
         return chromosome
 
 
