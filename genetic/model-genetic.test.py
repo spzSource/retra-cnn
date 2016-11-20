@@ -1,8 +1,16 @@
 import random
 import unittest
+from aetypes import Enum
 
 from pyeasyga.pyeasyga import GeneticAlgorithm
 from abc import abstractproperty, abstractmethod
+
+
+class EncodedType(Enum):
+    Convolution2d = 1
+    Activation = 2
+    Dense = 3
+    AvgPooling2d = 4
 
 
 class EncodedObject(object):
@@ -25,7 +33,7 @@ class DenseEncoded(EncodedObject):
 
     @property
     def type(self):
-        return 3
+        return EncodedType.Dense
 
     def encode(self, chromosome):
         result = list(chromosome)
@@ -43,7 +51,7 @@ class ActivationEncoded(EncodedObject):
 
     @property
     def type(self):
-        return 2
+        return EncodedType.Activation
 
     def encode(self, chromosome):
         result = list(chromosome)
@@ -58,7 +66,7 @@ class AvgPooling2dEncoded(EncodedObject):
 
     @property
     def type(self):
-        return 4
+        return EncodedType.AvgPooling2d
 
     def encode(self, chromosome):
         result = list(chromosome)
@@ -77,7 +85,7 @@ class Convolution2dEncoded(EncodedObject):
 
     @property
     def type(self):
-        return 1
+        return EncodedType.Convolution2d
 
     def encode(self, chromosome):
         result = list(chromosome)
@@ -128,8 +136,7 @@ class GeneticClassificationModelTest(unittest.TestCase):
     def create_individual(encoding_map):
         chromosome = []
 
-        number_of_layers = random.randint(2, 16)
-        for layer_index in range(0, number_of_layers):
+        for layer_index in range(0, random.randint(2, 16)):
             layer_type = random.randint(1, 4)
             chromosome = encoding_map[layer_type].encode(chromosome)
 
@@ -143,14 +150,14 @@ class GeneticClassificationModelTest(unittest.TestCase):
 
     def setUp(self):
 
+        """Genetic algorithm initialization"""
         self.encoded_map = {
-            1: Convolution2dEncoded(),
-            2: ActivationEncoded(),
-            3: DenseEncoded(),
-            4: AvgPooling2dEncoded()
+            EncodedType.Dense: DenseEncoded(),
+            EncodedType.Activation: ActivationEncoded(),
+            EncodedType.AvgPooling2d: AvgPooling2dEncoded(),
+            EncodedType.Convolution2d: Convolution2dEncoded()
         }
 
-        """Genetic algorithm initialization"""
         genetic = GeneticAlgorithm(list(self.encoded_map))
         genetic.mutate_function = self.mutation
         genetic.fitness_function = self.fitness
@@ -163,11 +170,11 @@ class GeneticClassificationModelTest(unittest.TestCase):
 
         """Test consistency of individual"""
         individual = self.create_individual(self.encoded_map)
-        print(individual)
+
         assert individual
-        assert 2 in individual
-        assert not 2 == individual[0]
-        assert individual[1::2].count(2) == len(individual[1::2])
+        assert EncodedType.Activation in individual
+        assert not EncodedType.Activation == individual[0]
+        assert individual[1::2].count(EncodedType.Activation) == len(individual[1::2])
 
 
 if __name__ == '__main__':
