@@ -35,11 +35,24 @@ class GeneticClassificationModel(object):
 
     @staticmethod
     def _fitness(member, encoding_map):
+        """
+        Calculates score for each of members of current population.
+        :param member: the member of current population.
+        :param encoding_map: the map which is used to convert chromosome to array of layers.
+        :return: score value.
+        """
         layers = GeneticClassificationModel._decode_chromosome(member, encoding_map)
         pass
 
     @staticmethod
     def _crossover(parent1, parent2):
+        """
+        Performs crossover operator for two parents.
+        Operator produces two children with genotype of both parents.
+        :param parent1: the first parent.
+        :param parent2: the second parent.
+        :return: two chromosomes which is a children of two parents.
+        """
         if len(parent1) <= len(parent2):
             crossover_point = random.randrange(1, len(parent1))
         else:
@@ -51,6 +64,11 @@ class GeneticClassificationModel(object):
 
     @staticmethod
     def _mutation(individual):
+        """
+        Performs mutation operator for specified chromosome.
+        :param individual: the set of gens (chromosome).
+        :return: None
+        """
         if len(individual) > 0:
             index = random.randrange(0, len(individual))
             individual.remove(index)
