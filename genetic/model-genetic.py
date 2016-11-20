@@ -36,15 +36,24 @@ class GeneticClassificationModel(object):
     @staticmethod
     def _fitness(member, encoding_map):
         layers = GeneticClassificationModel._decode_chromosome(member, encoding_map)
-        return layers
+        pass
 
     @staticmethod
     def _crossover(parent1, parent2):
-        pass
+        if len(parent1) <= len(parent2):
+            crossover_point = random.randrange(1, len(parent1))
+        else:
+            crossover_point = random.randrange(1, len(parent2))
+
+        child_1 = parent1[:crossover_point] + parent2[crossover_point:]
+        child_2 = parent2[:crossover_point] + parent1[crossover_point:]
+        return child_1, child_2
 
     @staticmethod
     def _mutation(individual):
-        pass
+        if len(individual) > 0:
+            index = random.randrange(0, len(individual))
+            individual.remove(index)
 
     @staticmethod
     def _create_individual(encoding_map):
