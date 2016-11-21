@@ -56,5 +56,4 @@ class ClassificationModel(object):
         (inputs, expected_outputs) = training_set
         np_input = np.array(inputs)
         np_expected = np.array(map(_to_expected_output, expected_outputs))
-        print(np_input[0])
         self.model.fit(np_input, np_expected, batch_size=32, nb_epoch=1000)

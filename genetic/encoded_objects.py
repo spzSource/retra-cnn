@@ -3,7 +3,7 @@ import random
 from aetypes import Enum
 from abc import abstractproperty, abstractmethod
 
-from keras.layers import Dense, Activation, AveragePooling2D, Convolution2D
+from keras.layers import Dense, Activation, AveragePooling2D, Convolution2D, Flatten
 
 
 class EncodedType(Enum):
@@ -11,6 +11,9 @@ class EncodedType(Enum):
     Activation = 2
     Dense = 3
     AvgPooling2d = 4
+    Flatten = 5
+    InputConvolution2DGen = 6
+    OutputDense = 7
 
 
 class GenObject(object):
@@ -18,6 +21,7 @@ class GenObject(object):
     An abstract gen which is combined to chromosome.
     :type - property is used for encoding and decoding layer object.
     """
+
     @abstractproperty
     def type(self):
         pass
@@ -28,8 +32,8 @@ class GenObject(object):
 
     def decode(self, encoded_gen):
         (gen_type, _) = encoded_gen
-        if gen_type == self.type:
-            raise Exception("Wrong encoded data type.")
+        if not gen_type == self.type:
+            raise Exception("Wrong encoded data type. Expected {0}, but actual is {1}".format(self.type, gen_type))
 
 
 class DenseGen(GenObject):
@@ -42,10 +46,21 @@ class DenseGen(GenObject):
 
     def encode(self, chromosome):
         result = list(chromosome)
+        print result
+        if len(result) > 0:
+            (last_gen_type, _) = result[-1]
+            if last_gen_type == EncodedType.Activation and len(result) > 1:
+                (last_gen_type, _) = result[-2]
+                if last_gen_type in [EncodedType.AvgPooling2d, EncodedType.Convolution2d,
+                                     EncodedType.InputConvolution2DGen]:
+                    result = FlattenGen().encode(result)
+            elif last_gen_type in [EncodedType.AvgPooling2d, EncodedType.Convolution2d,
+                                   EncodedType.InputConvolution2DGen]:
+                result = FlattenGen().encode(result)
 
         self.size = random.randint(32, 4096)
         result.append((self.type, [self.size]))
-        result.append(EncodedType.Activation)
+        result = ActivationGen().encode(result)
 
         return result
 
@@ -53,7 +68,8 @@ class DenseGen(GenObject):
         super(DenseGen, self).decode(encoded_gen)
 
         (_, encoded_params) = encoded_gen
-        return Dense(output_dim=encoded_params[0])
+
+        return Dense(encoded_params[0])
 
 
 class ActivationGen(GenObject):
@@ -66,8 +82,8 @@ class ActivationGen(GenObject):
 
     def encode(self, chromosome):
         result = list(chromosome)
-        if len(result) > 0 and not result[-1] == EncodedType.Activation:
-            result.append(self.type)
+        if len(result) > 0 and not result[-1][0] == EncodedType.Activation:
+            result.append((self.type, []))
         return result
 
     def decode(self, encoded_gen):
@@ -86,9 +102,10 @@ class AvgPooling2DGen(GenObject):
     def encode(self, chromosome):
         result = list(chromosome)
 
-        self.size = random.randint(2, 8)
-        result.append((self.type, [self.size]))
-        result.append(EncodedType.Activation)
+        if EncodedType.Dense not in map(lambda gen: gen[0], result):
+            self.size = random.randint(2, 8)
+            result.append((self.type, [self.size]))
+            result = ActivationGen().encode(result)
 
         return result
 
@@ -100,7 +117,7 @@ class AvgPooling2DGen(GenObject):
         return AveragePooling2D(
             strides=None,
             border_mode="same",
-            pool_size=(encoded_gen[0], encoded_gen[0]))
+            pool_size=(encoded_params[0], encoded_params[0]))
 
 
 class Convolution2DGen(GenObject):
@@ -115,11 +132,12 @@ class Convolution2DGen(GenObject):
     def encode(self, chromosome):
         result = list(chromosome)
 
-        self.filter_size = random.randint(2, 8)
-        self.filters_count = random.randint(2, 16)
+        if EncodedType.Dense not in map(lambda gen: gen[0], result):
+            self.filter_size = random.randint(2, 8)
+            self.filters_count = random.randint(2, 16)
 
-        result.append((self.type, [self.filters_count, self.filter_size]))
-        result.append(EncodedType.Activation)
+            result.append((self.type, [self.filters_count, self.filter_size]))
+            result = ActivationGen().encode(result)
 
         return result
 
@@ -128,5 +146,41 @@ class Convolution2DGen(GenObject):
 
         (_, encoded_params) = encoded_gen
 
-        return Convolution2D(encoded_gen[0], encoded_gen[1], encoded_gen[1], activation="relu")
+        return Convolution2D(encoded_params[0], encoded_params[1], encoded_params[1])
 
+
+class InputConvolution2DGen(Convolution2DGen):
+    @property
+    def type(self):
+        return EncodedType.InputConvolution2DGen
+
+    def decode(self, encoded_gen):
+        super(Convolution2DGen, self).decode(encoded_gen)
+
+        (_, encoded_params) = encoded_gen
+        return Convolution2D(encoded_params[0], encoded_params[1], encoded_params[1], input_shape=(3, 32, 32))
+
+
+class OutputDenseGen(DenseGen):
+    @property
+    def type(self):
+        return EncodedType.OutputDense
+
+    def decode(self, encoded_gen):
+        super(DenseGen, self).decode(encoded_gen)
+        return Dense(10)
+
+
+class FlattenGen(GenObject):
+    @property
+    def type(self):
+        return EncodedType.Flatten
+
+    def encode(self, chromosome):
+        result = list(chromosome)
+        result.append((EncodedType.Flatten, []))
+        return result
+
+    def decode(self, encoded_gen):
+        super(FlattenGen, self).decode(encoded_gen)
+        return Flatten()
