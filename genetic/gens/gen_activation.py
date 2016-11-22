@@ -1,10 +1,10 @@
 from keras.layers import Activation
 
-from genetic.gens.gen_object import GenObject
+from genetic.gens.gen import Gen
 from genetic.gen_type import EncodedType
 
 
-class ActivationGen(GenObject):
+class ActivationGen(Gen):
     """
     Activation layer's gen representation.
     """

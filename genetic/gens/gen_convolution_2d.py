@@ -2,12 +2,12 @@ import random
 
 from keras.layers import Convolution2D
 
-from genetic.gens.gen_object import GenObject
+from genetic.gens.gen import Gen
 from genetic.gen_type import EncodedType
 from genetic.gens.gen_activation import ActivationGen
 
 
-class Convolution2DGen(GenObject):
+class Convolution2DGen(Gen):
     """
     Convolution later's gen representation.
     :param filters_count - the number of feature-maps.

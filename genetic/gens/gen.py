@@ -1,7 +1,7 @@
 from abc import abstractproperty, abstractmethod
 
 
-class GenObject(object):
+class Gen(object):
     """
     An abstract gen which is combined to chromosome.
     type - property is used for encoding and decoding layer object.

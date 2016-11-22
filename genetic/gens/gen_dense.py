@@ -2,13 +2,13 @@ import random
 
 from keras.layers import Dense
 
-from genetic.gens.gen_object import GenObject
+from genetic.gens.gen import Gen
 from genetic.gen_type import EncodedType
 from genetic.gens.gen_flatten import FlattenGen
 from genetic.gens.gen_activation import ActivationGen
 
 
-class DenseGen(GenObject):
+class DenseGen(Gen):
     """
     Fully connected layers's gen representation
     :param size - the number of neurons for current layer.

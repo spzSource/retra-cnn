@@ -2,12 +2,12 @@ import random
 
 from keras.layers import AveragePooling2D
 
-from genetic.gens.gen_object import GenObject
+from genetic.gens.gen import Gen
 from genetic.gen_type import EncodedType
 from genetic.gens.gen_activation import ActivationGen
 
 
-class AvgPooling2DGen(GenObject):
+class AvgPooling2DGen(Gen):
     """
     Average Pooling layer's gen representation.
     :param size - the size of pooling window.
