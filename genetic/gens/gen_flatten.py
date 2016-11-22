@@ -1,7 +1,7 @@
 from keras.layers import Flatten
 
 from genetic.gens.gen import Gen
-from genetic.gen_type import EncodedType
+from genetic.gen_type import GenType
 
 
 class FlattenGen(Gen):
@@ -11,11 +11,11 @@ class FlattenGen(Gen):
     """
     @property
     def type(self):
-        return EncodedType.Flatten
+        return GenType.Flatten
 
     def encode(self, chromosome):
         result = list(chromosome)
-        result.append((EncodedType.Flatten, []))
+        result.append((GenType.Flatten, []))
         return result
 
     def decode(self, encoded_gen):

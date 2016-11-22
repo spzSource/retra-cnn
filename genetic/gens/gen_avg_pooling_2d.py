@@ -3,7 +3,7 @@ import random
 from keras.layers import AveragePooling2D
 
 from genetic.gens.gen import Gen
-from genetic.gen_type import EncodedType
+from genetic.gen_type import GenType
 from genetic.gens.gen_activation import ActivationGen
 
 
@@ -17,12 +17,12 @@ class AvgPooling2DGen(Gen):
 
     @property
     def type(self):
-        return EncodedType.AvgPooling2d
+        return GenType.AvgPooling2d
 
     def encode(self, chromosome):
         result = list(chromosome)
 
-        if EncodedType.Dense not in map(lambda gen: gen[0], result):
+        if GenType.Dense not in map(lambda gen: gen[0], result):
             self.size = random.randint(2, 8)
             result.append((self.type, [self.size]))
             result = ActivationGen().encode(result)

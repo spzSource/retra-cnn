@@ -1,7 +1,7 @@
 from aetypes import Enum
 
 
-class EncodedType(Enum):
+class GenType(Enum):
     Convolution2d = 1
     Activation = 2
     Dense = 3

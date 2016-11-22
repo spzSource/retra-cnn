@@ -2,8 +2,10 @@ import random
 
 from keras.layers import Dense
 
+from genetic.features.feature_activation_after import ActivationAfterFeature
+from genetic.features.feature_flatten_before import FlattenBeforeFeature
 from genetic.gens.gen import Gen
-from genetic.gen_type import EncodedType
+from genetic.gen_type import GenType
 from genetic.gens.gen_flatten import FlattenGen
 from genetic.gens.gen_activation import ActivationGen
 
@@ -13,29 +15,26 @@ class DenseGen(Gen):
     Fully connected layers's gen representation
     :param size - the number of neurons for current layer.
     """
-    def __init__(self, size=0):
+    def __init__(self, size=0, features=None):
+
+        if features is None:
+            features = []
+
         self.size = size
+        self.features = features
 
     @property
     def type(self):
-        return EncodedType.Dense
+        return GenType.Dense
 
     def encode(self, chromosome):
         result = list(chromosome)
-        if len(result) > 0:
-            (last_gen_type, _) = result[-1]
-            if last_gen_type == EncodedType.Activation and len(result) > 1:
-                (last_gen_type, _) = result[-2]
-                if last_gen_type in [EncodedType.AvgPooling2d, EncodedType.Convolution2d,
-                                     EncodedType.InputConvolution2DGen]:
-                    result = FlattenGen().encode(result)
-            elif last_gen_type in [EncodedType.AvgPooling2d, EncodedType.Convolution2d,
-                                   EncodedType.InputConvolution2DGen]:
-                result = FlattenGen().encode(result)
+
+        for feature in self.features:
+            result = feature.evaluate(result)
 
         self.size = random.randint(32, 4096)
         result.append((self.type, [self.size]))
-        result = ActivationGen().encode(result)
 
         return result
 

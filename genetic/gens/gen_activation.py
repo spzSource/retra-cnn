@@ -1,7 +1,7 @@
 from keras.layers import Activation
 
 from genetic.gens.gen import Gen
-from genetic.gen_type import EncodedType
+from genetic.gen_type import GenType
 
 
 class ActivationGen(Gen):
@@ -13,11 +13,11 @@ class ActivationGen(Gen):
 
     @property
     def type(self):
-        return EncodedType.Activation
+        return GenType.Activation
 
     def encode(self, chromosome):
         result = list(chromosome)
-        if len(result) > 0 and not result[-1][0] == EncodedType.Activation:
+        if len(result) > 0 and not result[-1][0] == GenType.Activation:
             result.append((self.type, []))
         return result
 

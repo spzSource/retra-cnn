@@ -6,7 +6,9 @@ from keras.layers import Convolution2D, Dense
 from keras.models import Sequential
 from keras.optimizers import SGD
 
-from genetic.gen_type import EncodedType
+from genetic.features.feature_activation_after import ActivationAfterFeature
+from genetic.features.feature_flatten_before import FlattenBeforeFeature
+from genetic.gen_type import GenType
 from genetic.gens.gen_flatten import FlattenGen
 from genetic.gens.gen_output_dense import OutputDenseGen
 from genetic.gens.gen_input_convolution_2d import InputConvolution2DGen
@@ -25,14 +27,19 @@ class GeneticClassificationModel(object):
     """
 
     def __init__(self):
+        self.features = [
+            FlattenBeforeFeature(),
+            ActivationAfterFeature()
+        ]
+
         self.encoding_map = {
-            EncodedType.Dense: DenseGen(),
-            EncodedType.Flatten: FlattenGen(),
-            EncodedType.Activation: ActivationGen(),
-            EncodedType.OutputDense: OutputDenseGen(),
+            GenType.Dense: DenseGen(features=self.features),
+            GenType.Flatten: FlattenGen(),
+            GenType.Activation: ActivationGen(),
+            GenType.OutputDense: OutputDenseGen(),
             # EncodedType.AvgPooling2d: AvgPooling2DGen(),
-            EncodedType.Convolution2d: Convolution2DGen(),
-            EncodedType.InputConvolution2DGen: InputConvolution2DGen()
+            GenType.Convolution2d: Convolution2DGen(features=[ActivationAfterFeature()]),
+            GenType.InputConvolution2DGen: InputConvolution2DGen(features=[ActivationAfterFeature()])
         }
 
         self.genetic = GeneticAlgorithm(self.encoding_map)
@@ -123,32 +130,32 @@ class GeneticClassificationModel(object):
         Randomly creates chromosome using special encoding map.
         :return: array of gens - chromosome.
         """
-        chromosome = encoding_map[EncodedType.InputConvolution2DGen].encode([])
+        chromosome = encoding_map[GenType.InputConvolution2DGen].encode([])
 
         for layer_index in range(0, random.randint(2, 16)):
             layer_type = random.randint(1, 4)
-            if not layer_type == EncodedType.AvgPooling2d:
+            if not layer_type == GenType.AvgPooling2d:
                 chromosome = encoding_map[layer_type].encode(chromosome)
 
         layers2D = [
-            EncodedType.AvgPooling2d,
-            EncodedType.Convolution2d,
-            EncodedType.InputConvolution2DGen
+            GenType.AvgPooling2d,
+            GenType.Convolution2d,
+            GenType.InputConvolution2DGen
         ]
 
         if len(chromosome) > 0:
             (last_gen_type, _) = chromosome[-1]
-            if last_gen_type == EncodedType.Activation and len(chromosome) > 1:
+            if last_gen_type == GenType.Activation and len(chromosome) > 1:
                 (last_gen_type, _) = chromosome[-2]
                 if last_gen_type in layers2D:
                     chromosome = FlattenGen().encode(chromosome)
             elif last_gen_type in layers2D:
                 chromosome = FlattenGen().encode(chromosome)
 
-        if len(chromosome) > 0 and not chromosome[-1] == EncodedType.Activation:
-            chromosome = encoding_map[EncodedType.Activation].encode(chromosome)
+        if len(chromosome) > 0 and not chromosome[-1] == GenType.Activation:
+            chromosome = encoding_map[GenType.Activation].encode(chromosome)
 
-        chromosome = encoding_map[EncodedType.OutputDense].encode(chromosome)
+        chromosome = encoding_map[GenType.OutputDense].encode(chromosome)
 
         return chromosome
 
