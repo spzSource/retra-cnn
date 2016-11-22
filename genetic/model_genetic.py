@@ -6,14 +6,13 @@ from keras.layers import Convolution2D, Dense
 from keras.models import Sequential
 from keras.optimizers import SGD
 
-from genetic.encoded_objects import \
-    EncodedType, \
-    DenseGen, \
-    ActivationGen, \
-    AvgPooling2DGen, \
-    Convolution2DGen, \
-    FlattenGen, \
-    InputConvolution2DGen, OutputDenseGen
+from genetic.gen_type import EncodedType
+from genetic.gens.gen_flatten import FlattenGen
+from genetic.gens.gen_output_dense import OutputDenseGen
+from genetic.gens.gen_input_convolution_2d import InputConvolution2DGen
+from genetic.gens.gen_convolution_2d import Convolution2DGen
+from genetic.gens.gen_activation import ActivationGen
+from genetic.gens.gen_dense import DenseGen
 
 from pyeasyga.pyeasyga import GeneticAlgorithm
 
