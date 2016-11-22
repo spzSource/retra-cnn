@@ -19,9 +19,8 @@ class EncodedType(Enum):
 class GenObject(object):
     """
     An abstract gen which is combined to chromosome.
-    :type - property is used for encoding and decoding layer object.
+    type - property is used for encoding and decoding layer object.
     """
-
     @abstractproperty
     def type(self):
         pass
@@ -37,6 +36,10 @@ class GenObject(object):
 
 
 class DenseGen(GenObject):
+    """
+    Fully connected layers's gen representation
+    :param size - the number of neurons for current layer.
+    """
     def __init__(self, size=0):
         self.size = size
 
@@ -46,7 +49,6 @@ class DenseGen(GenObject):
 
     def encode(self, chromosome):
         result = list(chromosome)
-        print result
         if len(result) > 0:
             (last_gen_type, _) = result[-1]
             if last_gen_type == EncodedType.Activation and len(result) > 1:
@@ -73,6 +75,9 @@ class DenseGen(GenObject):
 
 
 class ActivationGen(GenObject):
+    """
+    Activation layer's gen representation.
+    """
     def __init__(self):
         pass
 
@@ -92,6 +97,10 @@ class ActivationGen(GenObject):
 
 
 class AvgPooling2DGen(GenObject):
+    """
+    Average Pooling layer's gen representation.
+    :param size - the size of pooling window.
+    """
     def __init__(self, size=0):
         self.size = size
 
@@ -121,6 +130,11 @@ class AvgPooling2DGen(GenObject):
 
 
 class Convolution2DGen(GenObject):
+    """
+    Convolution later's gen representation.
+    :param filters_count - the number of feature-maps.
+    :param filter_size - the size of feature-map (NxM).
+    """
     def __init__(self, filters_count=0, filter_size=0):
         self.filter_size = filter_size
         self.filters_count = filters_count
@@ -150,6 +164,10 @@ class Convolution2DGen(GenObject):
 
 
 class InputConvolution2DGen(Convolution2DGen):
+    """
+    Represents gen for input convolution layer,
+    which is based on regular gen for convolution layer.
+    """
     @property
     def type(self):
         return EncodedType.InputConvolution2DGen
@@ -162,6 +180,9 @@ class InputConvolution2DGen(Convolution2DGen):
 
 
 class OutputDenseGen(DenseGen):
+    """
+    Represents gen for output layer for neural network.
+    """
     @property
     def type(self):
         return EncodedType.OutputDense
@@ -172,6 +193,10 @@ class OutputDenseGen(DenseGen):
 
 
 class FlattenGen(GenObject):
+    """
+    Represents flatten layer,
+    which is converts n-d layer to (n-1)-d layer.
+    """
     @property
     def type(self):
         return EncodedType.Flatten

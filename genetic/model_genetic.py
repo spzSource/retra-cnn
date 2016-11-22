@@ -125,20 +125,25 @@ class GeneticClassificationModel(object):
         :return: array of gens - chromosome.
         """
         chromosome = encoding_map[EncodedType.InputConvolution2DGen].encode([])
+
         for layer_index in range(0, random.randint(2, 16)):
             layer_type = random.randint(1, 4)
             if not layer_type == EncodedType.AvgPooling2d:
                 chromosome = encoding_map[layer_type].encode(chromosome)
 
+        layers2D = [
+            EncodedType.AvgPooling2d,
+            EncodedType.Convolution2d,
+            EncodedType.InputConvolution2DGen
+        ]
+
         if len(chromosome) > 0:
             (last_gen_type, _) = chromosome[-1]
             if last_gen_type == EncodedType.Activation and len(chromosome) > 1:
                 (last_gen_type, _) = chromosome[-2]
-                if last_gen_type in [EncodedType.AvgPooling2d, EncodedType.Convolution2d,
-                                     EncodedType.InputConvolution2DGen]:
+                if last_gen_type in layers2D:
                     chromosome = FlattenGen().encode(chromosome)
-            elif last_gen_type in [EncodedType.AvgPooling2d, EncodedType.Convolution2d,
-                                   EncodedType.InputConvolution2DGen]:
+            elif last_gen_type in layers2D:
                 chromosome = FlattenGen().encode(chromosome)
 
         if len(chromosome) > 0 and not chromosome[-1] == EncodedType.Activation:
