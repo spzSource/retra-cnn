@@ -1,20 +1,20 @@
 import random
 import numpy as np
 
-from keras.datasets import cifar10
-from keras.layers import Convolution2D, Dense
-from keras.models import Sequential
 from keras.optimizers import SGD
+from keras.datasets import cifar10
+from keras.models import Sequential
+from keras.layers import Convolution2D, Dense
 
-from genetic.features.feature_activation_after import ActivationAfterFeature
-from genetic.features.feature_flatten_before import FlattenBeforeFeature
 from genetic.gen_type import GenType
-from genetic.gens.gen_flatten import FlattenGen
-from genetic.gens.gen_output_dense import OutputDenseGen
-from genetic.gens.gen_input_convolution_2d import InputConvolution2DGen
-from genetic.gens.gen_convolution_2d import Convolution2DGen
-from genetic.gens.gen_activation import ActivationGen
 from genetic.gens.gen_dense import DenseGen
+from genetic.gens.gen_flatten import FlattenGen
+from genetic.gens.gen_activation import ActivationGen
+from genetic.gens.gen_output_dense import OutputDenseGen
+from genetic.gens.gen_convolution_2d import Convolution2DGen
+from genetic.gens.gen_input_convolution_2d import InputConvolution2DGen
+from genetic.features.feature_flatten_before import FlattenBeforeFeature
+from genetic.features.feature_activation_after import ActivationAfterFeature
 
 from pyeasyga.pyeasyga import GeneticAlgorithm
 
@@ -27,6 +27,7 @@ class GeneticClassificationModel(object):
     """
 
     def __init__(self):
+
         self.features = [
             FlattenBeforeFeature(),
             ActivationAfterFeature()
@@ -37,12 +38,11 @@ class GeneticClassificationModel(object):
             GenType.Flatten: FlattenGen(),
             GenType.Activation: ActivationGen(),
             GenType.OutputDense: OutputDenseGen(),
-            # EncodedType.AvgPooling2d: AvgPooling2DGen(),
             GenType.Convolution2d: Convolution2DGen(features=[ActivationAfterFeature()]),
             GenType.InputConvolution2DGen: InputConvolution2DGen(features=[ActivationAfterFeature()])
         }
 
-        self.genetic = GeneticAlgorithm(self.encoding_map)
+        self.genetic = GeneticAlgorithm(self.encoding_map, population_size=10)
         self.genetic.mutate_function = self._mutation
         self.genetic.fitness_function = self._fitness
         self.genetic.crossover_function = self._crossover
@@ -51,20 +51,19 @@ class GeneticClassificationModel(object):
     def fit(self):
         self.genetic.run()
 
-    @staticmethod
-    def _fitness(member, encoding_map):
+    def _fitness(self, member, encoding_map):
         """
         Calculates score for each of members of current population.
         :param member: the member of current population.
         :param encoding_map: the map which is used to convert chromosome to array of layers.
         :return: score value.
         """
-        internal_layers = GeneticClassificationModel._decode_chromosome(member, encoding_map)
-        layers = [
-                     Convolution2D(8, 5, 5, input_shape=(3, 32, 32), activation="relu"),
-                 ] + internal_layers + [
-                     Dense(10, activation="softmax")
-                 ]
+        internal_layers = self._decode_chromosome(member, encoding_map)
+
+        layers = [Convolution2D(8, 5, 5, input_shape=(3, 32, 32), activation="relu")] \
+                 + internal_layers \
+                 + [Dense(10, activation="softmax")]
+
         print(map(lambda x: x.name, layers))
         model = Sequential(layers)
 
@@ -77,7 +76,7 @@ class GeneticClassificationModel(object):
 
         (inputs, expected_outputs) = training_set
         np_input = np.array(inputs[:10])
-        np_expected = np.array(map(GeneticClassificationModel._to_expected_output, expected_outputs)[:10])
+        np_expected = np.array(map(self._to_expected_output, expected_outputs)[:10])
 
         try:
             history = model.fit(np_input, np_expected, batch_size=10, nb_epoch=10)
@@ -88,15 +87,13 @@ class GeneticClassificationModel(object):
 
         return ratio
 
-    @staticmethod
-    def _to_expected_output(expected_output):
+    def _to_expected_output(self, expected_output):
         class_number = expected_output[0]
         result = np.zeros(10, dtype=np.int)
         result[class_number] = 1
         return result
 
-    @staticmethod
-    def _crossover(parent1, parent2):
+    def _crossover(self, parent1, parent2):
         """
         Performs crossover operator for two parents.
         Operator produces two children with genotype of both parents.
@@ -104,17 +101,26 @@ class GeneticClassificationModel(object):
         :param parent2: the second parent.
         :return: two chromosomes which is a children of two parents.
         """
-        if len(parent1) <= len(parent2):
-            crossover_point = random.randrange(1, len(parent1))
-        else:
-            crossover_point = random.randrange(1, len(parent2))
+        crossover_point_for_first = self._determine_crossover_point(parent1)
+        crossover_point_for_second = self._determine_crossover_point(parent2)
 
-        child_1 = parent1[:crossover_point] + parent2[crossover_point:]
-        child_2 = parent2[:crossover_point] + parent1[crossover_point:]
+        child_1 = parent1[:crossover_point_for_first] + parent2[crossover_point_for_second:]
+        child_2 = parent2[:crossover_point_for_second] + parent1[crossover_point_for_first:]
+
         return child_1, child_2
 
-    @staticmethod
-    def _mutation(individual):
+    def _determine_crossover_point(self, chromosome):
+        """
+        Determines crossover point.
+        Need to take into account the acceptable combination of layers.
+        :param chromosome: the target chromosome.
+        :return: the crossover point for target chromosome.
+        """
+        gen_type_set = map(lambda gen: gen[0], chromosome)
+        crossover_point = gen_type_set.index(GenType.Flatten)
+        return crossover_point
+
+    def _mutation(self, individual):
         """
         Performs mutation operator for specified chromosome.
         :param individual: the set of gens (chromosome).
@@ -124,8 +130,7 @@ class GeneticClassificationModel(object):
             index = random.randrange(0, len(individual))
             individual.remove(individual[index])
 
-    @staticmethod
-    def _create_individual(encoding_map):
+    def _create_individual(self, encoding_map):
         """
         Randomly creates chromosome using special encoding map.
         :return: array of gens - chromosome.
@@ -159,8 +164,7 @@ class GeneticClassificationModel(object):
 
         return chromosome
 
-    @staticmethod
-    def _decode_chromosome(chromosome, encoding_map):
+    def _decode_chromosome(self, chromosome, encoding_map):
         """
         Converts encoded chromosome to array of layers.
         :param chromosome: array of encoded gens.
