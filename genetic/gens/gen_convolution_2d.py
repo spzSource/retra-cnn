@@ -13,11 +13,7 @@ class Convolution2DGen(Gen):
     :param filters_count - the number of feature-maps.
     :param filter_size - the size of feature-map (NxM).
     """
-    def __init__(self, filters_count=0, filter_size=0, features=None):
-        if features is None:
-            features = []
-
-        self.features = features
+    def __init__(self, filters_count=0, filter_size=0):
         self.filter_size = filter_size
         self.filters_count = filters_count
 
@@ -25,17 +21,10 @@ class Convolution2DGen(Gen):
     def type(self):
         return GenType.Convolution2d
 
-    def encode(self, chromosome):
-        result = list(chromosome)
-
-        if GenType.Dense not in map(lambda gen: gen[0], result):
-            self.filter_size = random.randint(2, 8)
-            self.filters_count = random.randint(2, 16)
-
-            result.append((self.type, [self.filters_count, self.filter_size]))
-            result = ActivationGen().encode(result)
-
-        return result
+    def encode(self):
+        self.filter_size = random.randint(2, 8)
+        self.filters_count = random.randint(2, 16)
+        return self.type, [self.filters_count, self.filter_size]
 
     def decode(self, encoded_gen):
         super(Convolution2DGen, self).decode(encoded_gen)

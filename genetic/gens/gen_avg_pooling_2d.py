@@ -19,15 +19,9 @@ class AvgPooling2DGen(Gen):
     def type(self):
         return GenType.AvgPooling2d
 
-    def encode(self, chromosome):
-        result = list(chromosome)
-
-        if GenType.Dense not in map(lambda gen: gen[0], result):
-            self.size = random.randint(2, 8)
-            result.append((self.type, [self.size]))
-            result = ActivationGen().encode(result)
-
-        return result
+    def encode(self):
+        self.size = random.randint(2, 8)
+        return self.type, [self.size]
 
     def decode(self, encoded_gen):
         super(AvgPooling2DGen, self).decode(encoded_gen)

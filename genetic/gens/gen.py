@@ -11,7 +11,7 @@ class Gen(object):
         pass
 
     @abstractmethod
-    def encode(self, chromosome):
+    def encode(self):
         pass
 
     def decode(self, encoded_gen):

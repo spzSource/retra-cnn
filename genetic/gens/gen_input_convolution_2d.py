@@ -9,11 +9,6 @@ class InputConvolution2DGen(Convolution2DGen):
     Represents gen for input convolution layer,
     which is based on regular gen for convolution layer.
     """
-    def __init__(self, features=None):
-        if features is None:
-            features = []
-
-        self.features = features
 
     @property
     def type(self):

@@ -13,10 +13,8 @@ class FlattenGen(Gen):
     def type(self):
         return GenType.Flatten
 
-    def encode(self, chromosome):
-        result = list(chromosome)
-        result.append((GenType.Flatten, []))
-        return result
+    def encode(self):
+        return GenType.Flatten, []
 
     def decode(self, encoded_gen):
         super(FlattenGen, self).decode(encoded_gen)

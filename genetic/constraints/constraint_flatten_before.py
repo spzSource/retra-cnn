@@ -1,9 +1,13 @@
 from genetic.gen_type import GenType
-from genetic.features.feature import Feature
+from genetic.constraints.constraint import Constraint
 from genetic.gens.gen_flatten import FlattenGen
 
 
-class FlattenBeforeFeature(Feature):
+class FlattenBeforeConstraint(Constraint):
+
+    @property
+    def target_types(self):
+        return [GenType.Dense]
 
     def __init__(self):
         self.encoding2d_map = [
@@ -22,17 +26,15 @@ class FlattenBeforeFeature(Feature):
         return chromosome_copy
 
     def _evaluate_for_target_gen(self, gen, chromosome):
-        (gen_type, _) = gen
-        if gen_type in self.encoding2d_map:
-            chromosome = FlattenGen().encode(chromosome)
+        if gen.type in self.encoding2d_map:
+            chromosome.append(FlattenGen())
         return chromosome
 
     @staticmethod
     def _find_last_gen_except_activation(chromosome):
         target_gen = chromosome[-1]
-        (gen_type, _) = target_gen
 
-        if gen_type == GenType.Activation and len(chromosome) > 1:
+        if target_gen.type == GenType.Activation and len(chromosome) > 1:
             target_gen = chromosome[-2]
 
         return target_gen
