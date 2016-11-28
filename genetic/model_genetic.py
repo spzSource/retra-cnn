@@ -75,19 +75,20 @@ class GeneticClassificationModel(object):
         layers = [input_layer] + internal_layers + [output_layer]
         print(layers)
 
-        model = Sequential(layers)
-        model.compile(
-            loss="mse",
-            metrics=["accuracy", "mean_absolute_percentage_error"],
-            optimizer=SGD(lr=0.01, momentum=0.0, decay=0.0, nesterov=False))
-
-        training_set, _ = cifar10.load_data()
-
-        (inputs, expected_outputs) = training_set
-        np_input = np.array(inputs[:10])
-        np_expected = np.array(map(_to_expected_output, expected_outputs)[:10])
-
         try:
+            model = Sequential(internal_layers)
+            model.compile(
+                loss="mse",
+                metrics=["accuracy", "mean_absolute_percentage_error"],
+                optimizer=SGD(lr=0.01, momentum=0.0, decay=0.0, nesterov=False))
+
+            training_set, _ = cifar10.load_data()
+
+            (inputs, expected_outputs) = training_set
+            np_input = np.array(inputs[:10])
+            print(map(_to_expected_output, expected_outputs)[:10])
+            np_expected = np.array(map(_to_expected_output, expected_outputs)[:10])
+
             history = model.fit(np_input, np_expected, batch_size=10, nb_epoch=100)
             ratio = history.history["acc"][-1]
         except ValueError as e:
@@ -138,6 +139,9 @@ class GeneticClassificationModel(object):
             elif layer_type == GenType.Dense:
                 if not chromosome.contains_type(GenType.Dense):
                     chromosome = chromosome.push_back(FlattenGen())
+                    chromosome = chromosome.push_back(self.encoding_map[layer_type])
+                    chromosome = chromosome.push_back(ActivationGen())
+                else:
                     chromosome = chromosome.push_back(self.encoding_map[layer_type])
                     chromosome = chromosome.push_back(ActivationGen())
 
