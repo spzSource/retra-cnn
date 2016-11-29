@@ -14,7 +14,6 @@ class OutputDenseGen(Gen):
         return GenType.OutputDense
 
     def encode(self):
-        print(GenType.OutputDense, [])
         return GenType.OutputDense, []
 
     def decode(self, encoded_gen):

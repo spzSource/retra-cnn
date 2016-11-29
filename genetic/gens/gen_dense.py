@@ -2,12 +2,8 @@ import random
 
 from keras.layers import Dense
 
-from genetic.constraints.constraint_activation_after import ActivationAfterConstraint
-from genetic.constraints.constraint_flatten_before import FlattenBeforeConstraint
-from genetic.gens.gen import Gen
 from genetic.gen_type import GenType
-from genetic.gens.gen_flatten import FlattenGen
-from genetic.gens.gen_activation import ActivationGen
+from genetic.gens.gen import Gen
 
 
 class DenseGen(Gen):

@@ -24,7 +24,7 @@ class Chromosome(object):
     def __len__(self):
         return len(self.gens)
 
-    def push_back(self, gen):
+    def attach(self, gen):
         """
         Adds gen to set of gens for current chromosome.
         :param gen: gen to be added.
@@ -33,7 +33,7 @@ class Chromosome(object):
         if not isinstance(gen, Gen):
             raise Exception("Chromosome should contain only gen which is inherited from Gen object")
 
-        for constraint in filter(lambda c: gen.type in c.target_types, self.constraints):
+        for constraint in filter(lambda c: gen.type in c.target_type, self.constraints):
             constraint.evaluate(self.gens)
 
         self.gens.append(gen)
@@ -52,15 +52,15 @@ class Chromosome(object):
 
         child_first = Chromosome(constraints=self.constraints)
         for gen in self.gens[:crossover_point_for_first]:
-            child_first.push_back(gen)
+            child_first.attach(gen)
         for gen in chromosome.gens[crossover_point_for_second:]:
-            child_first.push_back(gen)
+            child_first.attach(gen)
 
         child_second = Chromosome(constraints=self.constraints)
         for gen in chromosome.gens[:crossover_point_for_second]:
-            child_second.push_back(gen)
+            child_second.attach(gen)
         for gen in self.gens[crossover_point_for_first:]:
-            child_second.push_back(gen)
+            child_second.attach(gen)
 
         return child_first, child_second
 
@@ -105,5 +105,4 @@ class Chromosome(object):
         return self.gens[index].type == gen_type
 
     def index_of(self, gen_type):
-        print(gen_type)
         return map(lambda gen: gen.type, self.gens).index(gen_type)

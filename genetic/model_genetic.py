@@ -1,24 +1,24 @@
 import random
-import numpy as np
 
-from keras.optimizers import SGD
+import numpy as np
 from keras.datasets import cifar10
 from keras.models import Sequential
-from keras.layers import Convolution2D, Dense
+from keras.optimizers import SGD
+from pyeasyga.pyeasyga import GeneticAlgorithm
 
 from genetic.chromosome import Chromosome
 from genetic.gen_type import GenType
-from genetic.gens.gen_dense import DenseGen
-from genetic.gens.gen_flatten import FlattenGen
 from genetic.gens.gen_activation import ActivationGen, OutputActivation
 from genetic.gens.gen_convolution_2d import Convolution2DGen
-from genetic.constraints.constraint_flatten_before import FlattenBeforeConstraint
-from genetic.constraints.constraint_activation_after import ActivationAfterConstraint
-
-from pyeasyga.pyeasyga import GeneticAlgorithm
-
+from genetic.gens.gen_dense import DenseGen
+from genetic.gens.gen_flatten import FlattenGen
 from genetic.gens.gen_input_convolution_2d import InputConvolution2DGen
 from genetic.gens.gen_output_dense import OutputDenseGen
+from genetic.strategies.activation_attach_strategy import ActivationAttachStrategy
+from genetic.strategies.convolution2d_attach_strategy import Convolution2dAttachStrategy
+from genetic.strategies.dense_attach_strategy import DenseAttachStrategy
+from genetic.strategies.input_attach_strategy import InputConvolution2dAttachStrategy
+from genetic.strategies.output_dense_attach_strategy import OutputDenseAttachStrategy
 
 
 class GeneticClassificationModel(object):
@@ -30,9 +30,18 @@ class GeneticClassificationModel(object):
 
     def __init__(self):
 
-        self.features = [
-            FlattenBeforeConstraint(),
-            ActivationAfterConstraint()
+        def _to_expected_output(expected_output):
+            class_number = expected_output[0]
+            result = np.zeros(10, dtype=np.int)
+            result[class_number] = 1
+            return result
+
+        self.attach_strategies = [
+            DenseAttachStrategy(),
+            ActivationAttachStrategy(),
+            Convolution2dAttachStrategy(),
+            OutputDenseAttachStrategy(),
+            InputConvolution2dAttachStrategy()
         ]
 
         self.encoding_map = {
@@ -51,6 +60,12 @@ class GeneticClassificationModel(object):
         self.genetic.crossover_function = self._crossover
         self.genetic.create_individual = self._create_individual
 
+        self.training_set, _ = cifar10.load_data()
+
+        (inputs, expected_outputs) = self.training_set
+        self.np_input = np.array(inputs[:3])
+        self.np_expected = np.array(map(_to_expected_output, expected_outputs)[:3])
+
     def fit(self):
         self.genetic.run()
 
@@ -61,35 +76,16 @@ class GeneticClassificationModel(object):
         :return: score value.
         """
 
-        def _to_expected_output(expected_output):
-            class_number = expected_output[0]
-            result = np.zeros(10, dtype=np.int)
-            result[class_number] = 1
-            return result
-
-        input_layer = Convolution2D(8, 5, 5, input_shape=(3, 32, 32), activation="relu")
-        output_layer = Dense(10, activation="softmax")
         internal_layers = self._decode_chromosome(member)
-
-        print(map(lambda gen: gen.encode(), member.gens))
-        layers = [input_layer] + internal_layers + [output_layer]
-        print(layers)
 
         try:
             model = Sequential(internal_layers)
             model.compile(
                 loss="mse",
-                metrics=["accuracy", "mean_absolute_percentage_error"],
+                metrics=["accuracy"],
                 optimizer=SGD(lr=0.01, momentum=0.0, decay=0.0, nesterov=False))
 
-            training_set, _ = cifar10.load_data()
-
-            (inputs, expected_outputs) = training_set
-            np_input = np.array(inputs[:10])
-            print(map(_to_expected_output, expected_outputs)[:10])
-            np_expected = np.array(map(_to_expected_output, expected_outputs)[:10])
-
-            history = model.fit(np_input, np_expected, batch_size=10, nb_epoch=100)
+            history = model.fit(self.np_input, self.np_expected, batch_size=10, nb_epoch=10)
             ratio = history.history["acc"][-1]
         except ValueError as e:
             print(e)
@@ -115,47 +111,29 @@ class GeneticClassificationModel(object):
         """
         return chromosome.mutate()
 
-    def _create_individual(self, encoding_map):
+    def _create_individual(self, _):
         """
         Randomly creates chromosome using special encoding map.
         :return: array of gens - chromosome.
         """
         chromosome = Chromosome()
-        chromosome = chromosome.push_back(InputConvolution2DGen())
-        chromosome = chromosome.push_back(ActivationGen())
 
-        for layer_index in range(0, random.randint(2, 16)):
-            layer_type = random.randint(1, 3)
+        auto_generated_types = [
+            GenType.Convolution2d,
+            GenType.Dense,
+            GenType.Activation
+        ]
 
-            if layer_type == GenType.Activation:
-                if len(chromosome) > 0 and not chromosome.is_type_of(-1, GenType.Activation):
-                    chromosome = chromosome.push_back(self.encoding_map[layer_type])
+        gen_seq = [GenType.InputConvolution2DGen, GenType.Activation]
+        seq = [random.choice(auto_generated_types) for _ in range(0, random.randint(2, 16))]
+        gen_seq += seq
+        gen_seq += [GenType.OutputDense, GenType.OutputActivation]
 
-            elif layer_type == GenType.Convolution2d:
-                if not chromosome.contains_type(GenType.Dense):
-                    chromosome = chromosome.push_back(self.encoding_map[layer_type])
-                    chromosome = chromosome.push_back(ActivationGen())
-
-            elif layer_type == GenType.Dense:
-                if not chromosome.contains_type(GenType.Dense):
-                    chromosome = chromosome.push_back(FlattenGen())
-                    chromosome = chromosome.push_back(self.encoding_map[layer_type])
-                    chromosome = chromosome.push_back(ActivationGen())
-                else:
-                    chromosome = chromosome.push_back(self.encoding_map[layer_type])
-                    chromosome = chromosome.push_back(ActivationGen())
-
-            else:
-                chromosome.push_back(self.encoding_map[layer_type])
-
-        if not chromosome.contains_type(GenType.Dense):
-            chromosome = chromosome.push_back(FlattenGen())
-            chromosome = chromosome.push_back(OutputDenseGen())
-        else:
-            chromosome = chromosome.push_back(OutputDenseGen())
-
-        if len(chromosome) > 0:
-            chromosome = chromosome.push_back(OutputActivation())
+        for layer_type in gen_seq:
+            for strategy in self.attach_strategies:
+                if strategy.target_type == layer_type:
+                    strategy.evaluate(chromosome, self.encoding_map[layer_type])
+                    break
 
         return chromosome
 
