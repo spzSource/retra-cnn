@@ -1,6 +1,5 @@
 from genetic.gen_type import GenType
 from genetic.strategies.attach_strategy import AttachStrategy
-from genetic.gens.gen_flatten import FlattenGen
 
 
 class ActivationAttachStrategy(AttachStrategy):

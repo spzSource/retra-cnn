@@ -69,6 +69,7 @@ class Chromosome(object):
         Applies mutation operator for current chromosome object.
         :return: mutated chromosome.
         """
+        target_gens = []
         if len(self.gens) > 0:
 
             target_gens = list(self.gens)

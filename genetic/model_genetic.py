@@ -14,11 +14,11 @@ from genetic.gens.gen_dense import DenseGen
 from genetic.gens.gen_flatten import FlattenGen
 from genetic.gens.gen_input_convolution_2d import InputConvolution2DGen
 from genetic.gens.gen_output_dense import OutputDenseGen
-from genetic.strategies.activation_attach_strategy import ActivationAttachStrategy
-from genetic.strategies.convolution2d_attach_strategy import Convolution2dAttachStrategy
-from genetic.strategies.dense_attach_strategy import DenseAttachStrategy
-from genetic.strategies.input_attach_strategy import InputConvolution2dAttachStrategy
-from genetic.strategies.output_dense_attach_strategy import OutputDenseAttachStrategy
+from genetic.strategies.attach_strategy_activation import ActivationAttachStrategy
+from genetic.strategies.attach_strategy_convolution2d import Convolution2dAttachStrategy
+from genetic.strategies.attach_strategy_dense import DenseAttachStrategy
+from genetic.strategies.attach_strategy_input import InputConvolution2dAttachStrategy
+from genetic.strategies.attach_strategy_output_dense import OutputDenseAttachStrategy
 
 
 class GeneticClassificationModel(object):
