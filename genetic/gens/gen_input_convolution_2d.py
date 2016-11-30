@@ -9,13 +9,18 @@ class InputConvolution2DGen(Convolution2DGen):
     Represents gen for input convolution layer,
     which is based on regular gen for convolution layer.
     """
+    def __init__(self, shape):
+        super(InputConvolution2DGen, self).__init__()
+        self.shape = shape
 
     @property
     def type(self):
         return GenType.InputConvolution2DGen
 
-    def decode(self, encoded_gen):
-        super(Convolution2DGen, self).decode(encoded_gen)
+    def decode(self):
+        return Convolution2D(
+            self.filters_count,
+            self.filter_size,
+            self.filter_size,
+            input_shape=self.shape)
 
-        (_, encoded_params) = encoded_gen
-        return Convolution2D(encoded_params[0], encoded_params[1], encoded_params[1], input_shape=(3, 32, 32))

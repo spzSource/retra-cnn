@@ -24,6 +24,9 @@ class Chromosome(object):
     def __len__(self):
         return len(self.gens)
 
+    def __str__(self):
+        return "---\n" + "\n".join(map(lambda gen: str(gen), self.gens)) + "\n---"
+
     def attach(self, gen):
         """
         Adds gen to set of gens for current chromosome.

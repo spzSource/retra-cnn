@@ -11,26 +11,25 @@ class ActivationGen(Gen):
     def __init__(self):
         pass
 
+    def __str__(self):
+        return "Activation(relu)"
+
     @property
     def type(self):
         return GenType.Activation
 
-    def encode(self):
-        return self.type, []
-
-    def decode(self, encoded_gen):
-        super(ActivationGen, self).decode(encoded_gen)
+    def decode(self):
         return Activation(activation='relu')
 
 
 class OutputActivation(Gen):
+
+    def __str__(self):
+        return "Activation(softmax)"
+
     @property
     def type(self):
         return GenType.OutputActivation
 
-    def encode(self):
-        return self.type, []
-
-    def decode(self, encoded_gen):
-        super(OutputActivation, self).decode(encoded_gen)
+    def decode(self):
         return Activation(activation='softmax')

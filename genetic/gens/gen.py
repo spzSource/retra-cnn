@@ -11,10 +11,5 @@ class Gen(object):
         pass
 
     @abstractmethod
-    def encode(self):
+    def decode(self):
         pass
-
-    def decode(self, encoded_gen):
-        (gen_type, _) = encoded_gen
-        if not gen_type == self.type:
-            raise Exception("Wrong encoded data type. Expected {0}, but actual is {1}".format(self.type, gen_type))

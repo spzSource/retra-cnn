@@ -1,6 +1,7 @@
+import json
 import random
-
 import numpy as np
+
 from keras.datasets import cifar10
 from keras.models import Sequential
 from keras.optimizers import SGD
@@ -14,6 +15,7 @@ from genetic.gens.gen_dense import DenseGen
 from genetic.gens.gen_flatten import FlattenGen
 from genetic.gens.gen_input_convolution_2d import InputConvolution2DGen
 from genetic.gens.gen_output_dense import OutputDenseGen
+
 from genetic.strategies.attach_strategy_activation import ActivationAttachStrategy
 from genetic.strategies.attach_strategy_convolution2d import Convolution2dAttachStrategy
 from genetic.strategies.attach_strategy_dense import DenseAttachStrategy
@@ -45,13 +47,13 @@ class GeneticClassificationModel(object):
         ]
 
         self.encoding_map = {
-            GenType.Dense: DenseGen(),
-            GenType.Flatten: FlattenGen(),
-            GenType.Activation: ActivationGen(),
-            GenType.Convolution2d: Convolution2DGen(),
-            GenType.OutputDense: OutputDenseGen(),
-            GenType.InputConvolution2DGen: InputConvolution2DGen(),
-            GenType.OutputActivation: OutputActivation()
+            GenType.Dense: lambda: DenseGen(),
+            GenType.Flatten: lambda: FlattenGen(),
+            GenType.Activation: lambda: ActivationGen(),
+            GenType.Convolution2d: lambda: Convolution2DGen(),
+            GenType.OutputDense: lambda: OutputDenseGen(size=10),
+            GenType.OutputActivation: lambda: OutputActivation(),
+            GenType.InputConvolution2DGen: lambda: InputConvolution2DGen(shape=(3, 32, 32)),
         }
 
         self.genetic = GeneticAlgorithm([], population_size=10)
@@ -75,6 +77,8 @@ class GeneticClassificationModel(object):
         :param member: the member of current population.
         :return: score value.
         """
+
+        print(member)
 
         internal_layers = self._decode_chromosome(member)
 
@@ -125,14 +129,13 @@ class GeneticClassificationModel(object):
         ]
 
         gen_seq = [GenType.InputConvolution2DGen, GenType.Activation]
-        seq = [random.choice(auto_generated_types) for _ in range(0, random.randint(2, 16))]
-        gen_seq += seq
+        gen_seq += [random.choice(auto_generated_types) for _ in range(0, random.randint(2, 16))]
         gen_seq += [GenType.OutputDense, GenType.OutputActivation]
 
         for layer_type in gen_seq:
             for strategy in self.attach_strategies:
                 if strategy.target_type == layer_type:
-                    strategy.evaluate(chromosome, self.encoding_map[layer_type])
+                    strategy.evaluate(chromosome, self.encoding_map[layer_type]())
                     break
 
         return chromosome
@@ -145,6 +148,6 @@ class GeneticClassificationModel(object):
         """
         layers = []
         for gen in chromosome.gens:
-            layer = self.encoding_map[gen.type].decode(gen.encode())
+            layer = self.encoding_map[gen.type]().decode()
             layers.append(layer)
         return layers
