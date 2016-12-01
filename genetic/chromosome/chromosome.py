@@ -1,7 +1,7 @@
-from genetic.gens.gen import Gen
+from functools import *
+
 from genetic.gen_type import GenType
-from genetic.gens.gen_dense import DenseGen
-from genetic.gens.gen_convolution_2d import Convolution2DGen
+from genetic.gens.gen import Gen
 
 
 class Chromosome(object):
@@ -10,22 +10,21 @@ class Chromosome(object):
     :param initial_gens - initial set of gens for current chromosome.
     """
 
-    def __init__(self, initial_gens=None, constraints=None):
+    def __init__(self, initial_gens=None, mutations=None):
 
         if initial_gens is None:
             initial_gens = []
 
-        if constraints is None:
-            constraints = []
+        if mutations is None:
+            import genetic.strategies.mutation
+
+            mutations = [
+                genetic.strategies.mutation.MutationStrategy1d(),
+                genetic.strategies.mutation.MutationStrategy2d()
+            ]
 
         self.gens = initial_gens
-        self.constraints = constraints
-
-    def __len__(self):
-        return len(self.gens)
-
-    def __str__(self):
-        return "---\n" + "\n".join(map(lambda gen: str(gen), self.gens)) + "\n---"
+        self.mutations = mutations
 
     def attach(self, gen):
         """
@@ -36,12 +35,9 @@ class Chromosome(object):
         if not isinstance(gen, Gen):
             raise Exception("Chromosome should contain only gen which is inherited from Gen object")
 
-        for constraint in filter(lambda c: gen.type in c.target_type, self.constraints):
-            constraint.evaluate(self.gens)
-
         self.gens.append(gen)
 
-        return Chromosome(initial_gens=self.gens, constraints=self.constraints)
+        return Chromosome(initial_gens=self.gens)
 
     def cross(self, chromosome):
         """
@@ -53,17 +49,25 @@ class Chromosome(object):
         crossover_point_for_first = self.index_of(GenType.Flatten)
         crossover_point_for_second = chromosome.index_of(GenType.Flatten)
 
-        child_first = Chromosome(constraints=self.constraints)
-        for gen in self.gens[:crossover_point_for_first]:
-            child_first.attach(gen)
-        for gen in chromosome.gens[crossover_point_for_second:]:
-            child_first.attach(gen)
+        child_first = reduce(
+            lambda res, item: res.attach(item),
+            self.gens[:crossover_point_for_first],
+            Chromosome())
 
-        child_second = Chromosome(constraints=self.constraints)
-        for gen in chromosome.gens[:crossover_point_for_second]:
-            child_second.attach(gen)
-        for gen in self.gens[crossover_point_for_first:]:
-            child_second.attach(gen)
+        child_first = reduce(
+            lambda res, item: res.attach(item),
+            chromosome.gens[crossover_point_for_second:],
+            child_first)
+
+        child_second = reduce(
+            lambda res, item: res.attach(item),
+            chromosome.gens[:crossover_point_for_second],
+            Chromosome())
+
+        child_second = reduce(
+            lambda res, item: res.attach(item),
+            self.gens[crossover_point_for_first:],
+            child_second)
 
         return child_first, child_second
 
@@ -73,34 +77,14 @@ class Chromosome(object):
         :return: mutated chromosome.
         """
         target_gens = []
+
         if len(self.gens) > 0:
+            for mutation in self.mutations:
+                if mutation.check(self):
+                    mutation.evaluate(self)
+                    break
 
-            target_gens = list(self.gens)
-
-            flatten_gen_index = self.index_of(GenType.Flatten)
-
-            left_part_gens_count = len(target_gens[:flatten_gen_index])
-            right_part_gens_count = len(target_gens[(flatten_gen_index + 1):])
-
-            if left_part_gens_count < right_part_gens_count:
-                is_2d = True
-                start_index = 1
-                end_index = flatten_gen_index
-            else:
-                is_2d = False
-                start_index = flatten_gen_index + 1
-                end_index = len(target_gens) - 1
-
-            if (end_index - start_index) < 3:
-                if is_2d:
-                    target_gens.insert(end_index, Convolution2DGen())
-                else:
-                    target_gens.insert(end_index, DenseGen())
-
-            elif (end_index - start_index) > 5:
-                target_gens.pop(end_index)
-
-        return Chromosome(initial_gens=target_gens, constraints=self.constraints)
+        return Chromosome(initial_gens=target_gens)
 
     def contains_type(self, gen_type):
         return gen_type in map(lambda gen: gen.type, self.gens)
@@ -110,3 +94,9 @@ class Chromosome(object):
 
     def index_of(self, gen_type):
         return map(lambda gen: gen.type, self.gens).index(gen_type)
+
+    def __len__(self):
+        return len(self.gens)
+
+    def __str__(self):
+        return "---\n" + "\n".join(map(lambda gen: str(gen), self.gens)) + "\n---"
