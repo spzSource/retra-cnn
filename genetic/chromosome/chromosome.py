@@ -1,4 +1,4 @@
-from functools import *
+from functools import reduce
 
 from genetic.gen_type import GenType
 from genetic.gens.gen import Gen
@@ -87,16 +87,38 @@ class Chromosome(object):
         return Chromosome(initial_gens=target_gens)
 
     def contains_type(self, gen_type):
+        """
+        Indicates whether current chromosome contains gen with specified type.
+        :param gen_type: The type of required gen.
+        :return: True - contains, otherwise - False
+        """
         return gen_type in map(lambda gen: gen.type, self.gens)
 
     def is_type_of(self, index, gen_type):
+        """
+        Check the type of gen by index.
+        :param index: the index of gen in the chromosome.
+        :param gen_type: The required get to check.
+        :return: True - type is matched, otherwise - False.
+        """
         return self.gens[index].type == gen_type
 
     def index_of(self, gen_type):
+        """
+        Returns an index of gen with specified type inside chromosome.
+        :param gen_type: Required type of gen.
+        :return: index of gen.
+        """
         return map(lambda gen: gen.type, self.gens).index(gen_type)
 
     def __len__(self):
+        """
+        Returns length of chromosome.
+        """
         return len(self.gens)
 
     def __str__(self):
+        """
+        Returns string representation of current chromosome.
+        """
         return "---\n" + "\n".join(map(lambda gen: str(gen), self.gens)) + "\n---"
