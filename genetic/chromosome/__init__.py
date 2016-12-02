@@ -1,1 +1,0 @@
-from chromosome import Chromosome

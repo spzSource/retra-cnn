@@ -1,5 +1,3 @@
-import json
-import random
 import numpy as np
 
 from keras.datasets import cifar10
@@ -7,20 +5,10 @@ from keras.models import Sequential
 from keras.optimizers import SGD
 from pyeasyga.pyeasyga import GeneticAlgorithm
 
-from genetic.chromosome import Chromosome
-from genetic.gen_type import GenType
-from genetic.gens.gen_activation import ActivationGen, OutputActivation
-from genetic.gens.gen_convolution_2d import Convolution2DGen
-from genetic.gens.gen_dense import DenseGen
-from genetic.gens.gen_flatten import FlattenGen
-from genetic.gens.gen_input_convolution_2d import InputConvolution2DGen
-from genetic.gens.gen_output_dense import OutputDenseGen
 
-from genetic.strategies.attach_strategy_activation import ActivationAttachStrategy
-from genetic.strategies.attach_strategy_convolution2d import Convolution2dAttachStrategy
-from genetic.strategies.attach_strategy_dense import DenseAttachStrategy
-from genetic.strategies.attach_strategy_input import InputConvolution2dAttachStrategy
-from genetic.strategies.attach_strategy_output_dense import OutputDenseAttachStrategy
+from genetic.gens import *
+from genetic.strategies import *
+from genetic.chromo.chromosome import Chromosome
 
 
 class GeneticClassificationModel(object):
@@ -56,7 +44,7 @@ class GeneticClassificationModel(object):
             GenType.InputConvolution2DGen: lambda: InputConvolution2DGen(shape=(3, 32, 32)),
         }
 
-        self.genetic = GeneticAlgorithm([], population_size=10)
+        self.genetic = GeneticAlgorithm([], population_size=10, generations=10)
         self.genetic.mutate_function = self._mutation
         self.genetic.fitness_function = self._fitness
         self.genetic.crossover_function = self._crossover
@@ -109,16 +97,16 @@ class GeneticClassificationModel(object):
 
     def _mutation(self, chromosome):
         """
-        Performs mutation operator for specified chromosome.
-        :param chromosome: the set of gens (chromosome).
+        Performs mutation operator for specified chromo.
+        :param chromosome: the set of gens (chromo).
         :return: the index of added gen
         """
         return chromosome.mutate()
 
     def _create_individual(self, _):
         """
-        Randomly creates chromosome using special encoding map.
-        :return: array of gens - chromosome.
+        Randomly creates chromo using special encoding map.
+        :return: array of gens - chromo.
         """
         chromosome = Chromosome()
 
@@ -148,6 +136,6 @@ class GeneticClassificationModel(object):
         """
         layers = []
         for gen in chromosome.gens:
-            layer = self.encoding_map[gen.type]().decode()
+            layer = gen.decode()
             layers.append(layer)
         return layers

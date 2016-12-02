@@ -1,6 +1,6 @@
 import unittest
 
-from genetic.chromosome import Chromosome
+from genetic.chromo.chromosome import Chromosome
 from genetic.gens.gen_activation import ActivationGen
 from genetic.gens.gen_convolution_2d import Convolution2DGen
 from genetic.gens.gen_dense import DenseGen

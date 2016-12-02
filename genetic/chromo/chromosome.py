@@ -6,8 +6,8 @@ from genetic.gens.gen import Gen
 
 class Chromosome(object):
     """
-    Represents chromosome, which is a set of gens.
-    :param initial_gens - initial set of gens for current chromosome.
+    Represents chromo, which is a set of gens.
+    :param initial_gens - initial set of gens for current chromo.
     """
 
     def __init__(self, initial_gens=None, mutations=None):
@@ -28,7 +28,7 @@ class Chromosome(object):
 
     def attach(self, gen):
         """
-        Adds gen to set of gens for current chromosome.
+        Adds gen to set of gens for current chromo.
         :param gen: gen to be added.
         :return: new instance of Chromosome object which contains additional gen.
         """
@@ -43,7 +43,7 @@ class Chromosome(object):
         """
         Performs crossover operator for two parents.
         Operator produces two children with genotype of both parents.
-        :param chromosome: the chromosome to be applied crossover operator.
+        :param chromosome: the chromo to be applied crossover operator.
         :return: two chromosomes which is a children of two parents.
         """
         crossover_point_for_first = self.index_of(GenType.Flatten)
@@ -73,8 +73,8 @@ class Chromosome(object):
 
     def mutate(self):
         """
-        Applies mutation operator for current chromosome object.
-        :return: mutated chromosome.
+        Applies mutation operator for current chromo object.
+        :return: mutated chromo.
         """
         target_gens = []
 
@@ -88,7 +88,7 @@ class Chromosome(object):
 
     def contains_type(self, gen_type):
         """
-        Indicates whether current chromosome contains gen with specified type.
+        Indicates whether current chromo contains gen with specified type.
         :param gen_type: The type of required gen.
         :return: True - contains, otherwise - False
         """
@@ -97,7 +97,7 @@ class Chromosome(object):
     def is_type_of(self, index, gen_type):
         """
         Check the type of gen by index.
-        :param index: the index of gen in the chromosome.
+        :param index: the index of gen in the chromo.
         :param gen_type: The required get to check.
         :return: True - type is matched, otherwise - False.
         """
@@ -105,7 +105,7 @@ class Chromosome(object):
 
     def index_of(self, gen_type):
         """
-        Returns an index of gen with specified type inside chromosome.
+        Returns an index of gen with specified type inside chromo.
         :param gen_type: Required type of gen.
         :return: index of gen.
         """
@@ -113,12 +113,12 @@ class Chromosome(object):
 
     def __len__(self):
         """
-        Returns length of chromosome.
+        Returns length of chromo.
         """
         return len(self.gens)
 
     def __str__(self):
         """
-        Returns string representation of current chromosome.
+        Returns string representation of current chromo.
         """
         return "---\n" + "\n".join(map(lambda gen: str(gen), self.gens)) + "\n---"

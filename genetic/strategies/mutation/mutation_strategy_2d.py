@@ -1,4 +1,4 @@
-from genetic.chromosome import Chromosome
+from genetic.chromo.chromosome import Chromosome
 from genetic.gen_type import GenType
 from genetic.gens.gen_convolution_2d import Convolution2DGen
 from genetic.strategies.mutation.mutation_strategy import MutationStrategy
