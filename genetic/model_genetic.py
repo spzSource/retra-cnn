@@ -1,14 +1,8 @@
-import numpy as np
-
-from keras.datasets import cifar10
-from keras.models import Sequential
-from keras.optimizers import SGD
-from pyeasyga.pyeasyga import GeneticAlgorithm
-
-
 from genetic.gens import *
 from genetic.strategies import *
 from genetic.chromo.chromosome import Chromosome
+
+from pyeasyga.pyeasyga import GeneticAlgorithm
 
 
 class GeneticClassificationModel(object):
@@ -18,13 +12,10 @@ class GeneticClassificationModel(object):
     Gen structure is array of neurons for each or layers in the target neural network.
     """
 
-    def __init__(self):
+    def __init__(self, estimation, population_size, generations):
 
-        def _to_expected_output(expected_output):
-            class_number = expected_output[0]
-            result = np.zeros(10, dtype=np.int)
-            result[class_number] = 1
-            return result
+        self.estimation = estimation
+        self.fitness_callbacks = []
 
         self.attach_strategies = [
             DenseAttachStrategy(),
@@ -44,20 +35,27 @@ class GeneticClassificationModel(object):
             GenType.InputConvolution2DGen: lambda: InputConvolution2DGen(shape=(3, 32, 32)),
         }
 
-        self.genetic = GeneticAlgorithm([], population_size=10, generations=10)
+        self.genetic = GeneticAlgorithm(
+            seed_data=[],
+            population_size=population_size,
+            generations=generations)
+
         self.genetic.mutate_function = self._mutation
         self.genetic.fitness_function = self._fitness
         self.genetic.crossover_function = self._crossover
         self.genetic.create_individual = self._create_individual
 
-        self.training_set, _ = cifar10.load_data()
-
-        (inputs, expected_outputs) = self.training_set
-        self.np_input = np.array(inputs[:3])
-        self.np_expected = np.array(map(_to_expected_output, expected_outputs)[:3])
-
     def fit(self):
+        """
+        Fits appropriate model to find best individual
+        among sets of neural network models.
+        :return: best neural network model.
+        """
         self.genetic.run()
+        return self.genetic.best_individual()
+
+    def add_callback(self, callback):
+        self.fitness_callbacks.append(callback)
 
     def _fitness(self, member, _):
         """
@@ -65,23 +63,10 @@ class GeneticClassificationModel(object):
         :param member: the member of current population.
         :return: score value.
         """
+        ratio = self.estimation.estimate(member)
 
-        print(member)
-
-        internal_layers = self._decode_chromosome(member)
-
-        try:
-            model = Sequential(internal_layers)
-            model.compile(
-                loss="mse",
-                metrics=["accuracy"],
-                optimizer=SGD(lr=0.01, momentum=0.0, decay=0.0, nesterov=False))
-
-            history = model.fit(self.np_input, self.np_expected, batch_size=10, nb_epoch=10)
-            ratio = history.history["acc"][-1]
-        except ValueError as e:
-            print(e)
-            ratio = 0
+        for callback in self.fitness_callbacks:
+            callback(member, ratio)
 
         return ratio
 
@@ -127,15 +112,3 @@ class GeneticClassificationModel(object):
                     break
 
         return chromosome
-
-    def _decode_chromosome(self, chromosome):
-        """
-        Converts encoded chromosome to array of layers.
-        :param chromosome: array of encoded gens.
-        :return: array of layers for neural network.
-        """
-        layers = []
-        for gen in chromosome.gens:
-            layer = gen.decode()
-            layers.append(layer)
-        return layers
