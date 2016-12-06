@@ -1,3 +1,5 @@
+import tabulate
+
 from functools import reduce
 
 from genetic.gen_type import GenType
@@ -113,12 +115,18 @@ class Chromosome(object):
 
     def __len__(self):
         """
-        Returns length of chromo.
+        Returns length of chromosome.
         """
         return len(self.gens)
+
+    def __iter__(self):
+        return iter(self.gens)
 
     def __str__(self):
         """
         Returns string representation of current chromo.
         """
-        return "---\n" + "\n".join(map(lambda gen: str(gen), self.gens)) + "\n---"
+        return tabulate.tabulate(
+            zip(map(lambda (index, gen): "{0}. {1}".format(index, gen), enumerate(self.gens))),
+            headers=["Layer:"],
+            tablefmt="grid")

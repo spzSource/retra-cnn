@@ -64,6 +64,8 @@ class GeneticClassificationModel(object):
         :param member: the member of current population.
         :return: score value.
         """
+        print(member)
+
         ratio = self.estimation.estimate(member)
 
         for callback in self.fitness_callbacks:
@@ -83,16 +85,16 @@ class GeneticClassificationModel(object):
 
     def _mutation(self, chromosome):
         """
-        Performs mutation operator for specified chromo.
-        :param chromosome: the set of gens (chromo).
+        Performs mutation operator for specified chromosome.
+        :param chromosome: the set of gens (chromosome).
         :return: the index of added gen
         """
         return chromosome.mutate()
 
     def _create_individual(self, _):
         """
-        Randomly creates chromo using special encoding map.
-        :return: array of gens - chromo.
+        Randomly creates chromosome using special encoding map.
+        :return: array of gens - chromosome.
         """
         chromosome = Chromosome()
 
