@@ -13,7 +13,7 @@ class XlsxGeneticClassificationModel(object):
         self.origin.add_callback(self.fitness)
 
     def fit(self):
-        self.origin.fit()
+        return self.origin.fit()
 
     def fitness(self, member, ratio):
         self.individuals.append((member, ratio))

@@ -20,4 +20,4 @@ class OutputDenseGen(Gen):
         return GenType.OutputDense
 
     def decode(self):
-        return Dense(self.size, activation="softmax")
+        return Dense(self.size, activation="softmax", init="lecun_uniform")

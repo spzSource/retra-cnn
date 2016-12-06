@@ -25,4 +25,4 @@ class AvgPooling2DGen(Gen):
         return AveragePooling2D(
             strides=None,
             border_mode="same",
-            pool_size=(self.size, self.size))
+            pool_size=(self.size, self.size), init="lecun_uniform")

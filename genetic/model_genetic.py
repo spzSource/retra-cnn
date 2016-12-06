@@ -38,7 +38,8 @@ class GeneticClassificationModel(object):
         self.genetic = GeneticAlgorithm(
             seed_data=[],
             population_size=population_size,
-            generations=generations)
+            generations=generations,
+            mutation_probability=0.5)
 
         self.genetic.mutate_function = self._mutation
         self.genetic.fitness_function = self._fitness
@@ -102,7 +103,7 @@ class GeneticClassificationModel(object):
         ]
 
         gen_seq = [GenType.InputConvolution2DGen, GenType.Activation]
-        gen_seq += [random.choice(auto_generated_types) for _ in range(0, random.randint(2, 16))]
+        gen_seq += [random.choice(auto_generated_types) for _ in range(0, random.randint(2, 6))]
         gen_seq += [GenType.OutputDense, GenType.OutputActivation]
 
         for layer_type in gen_seq:

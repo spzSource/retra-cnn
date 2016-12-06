@@ -1,3 +1,4 @@
+import gc
 from keras.models import Sequential
 from keras.optimizers import SGD
 
@@ -14,6 +15,9 @@ class AccuracyEstimation(object):
         :param chromosome: target chromosome to be estimated.
         :return: estimation value fot passed chromosome.
         """
+
+        print("Current chromosome: {0}".format(str(chromosome)))
+
         layers = self._decode_chromosome(chromosome)
 
         try:
@@ -23,8 +27,9 @@ class AccuracyEstimation(object):
                 metrics=["accuracy"],
                 optimizer=SGD(lr=0.01, momentum=0.0, decay=0.0, nesterov=False))
 
-            history = model.fit(self.target_input, self.expected_output, batch_size=10, nb_epoch=10)
+            history = model.fit(self.target_input, self.expected_output, batch_size=10, nb_epoch=100)
             ratio = history.history["acc"][-1]
+
         except ValueError as e:
             print(e)
             ratio = 0

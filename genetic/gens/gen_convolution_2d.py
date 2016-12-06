@@ -13,7 +13,7 @@ class Convolution2DGen(Gen):
     """
     def __init__(self):
         self.filter_size = random.randint(2, 8)
-        self.filters_count = random.randint(2, 16)
+        self.filters_count = random.randint(2, 8)
 
     def __str__(self):
         return "Convolution2D: n_filter={0}, nb_row={1}, nb_col={1}"\
@@ -24,4 +24,4 @@ class Convolution2DGen(Gen):
         return GenType.Convolution2d
 
     def decode(self):
-        return Convolution2D(self.filters_count, self.filter_size, self.filter_size)
+        return Convolution2D(self.filters_count, self.filter_size, self.filter_size, init="lecun_uniform")

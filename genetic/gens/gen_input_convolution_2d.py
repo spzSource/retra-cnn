@@ -22,5 +22,5 @@ class InputConvolution2DGen(Convolution2DGen):
             self.filters_count,
             self.filter_size,
             self.filter_size,
-            input_shape=self.shape)
+            input_shape=self.shape, init="lecun_uniform")
 

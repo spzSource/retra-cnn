@@ -109,7 +109,7 @@ class Chromosome(object):
         :param gen_type: Required type of gen.
         :return: index of gen.
         """
-        return map(lambda gen: gen.type, self.gens).index(gen_type)
+        return list(map(lambda gen: gen.type, self.gens)).index(gen_type)
 
     def __len__(self):
         """

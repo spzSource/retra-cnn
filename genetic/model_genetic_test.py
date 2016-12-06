@@ -1,5 +1,4 @@
 import unittest
-
 import datetime
 import numpy as np
 
@@ -23,7 +22,6 @@ def _to_expected_output(expected_output):
 
 
 class ChromosomeTest(unittest.TestCase):
-
     def setUp(self):
         self.chromosome = Chromosome()
 
@@ -32,9 +30,9 @@ class ChromosomeTest(unittest.TestCase):
         self.assertNotEqual(new_chromosome, self.chromosome)
 
     def test_chromosome_length(self):
-        new_chromosome = self.chromosome\
-            .attach(Convolution2DGen())\
-            .attach(ActivationGen())\
+        new_chromosome = self.chromosome \
+            .attach(Convolution2DGen()) \
+            .attach(ActivationGen()) \
             .attach(Convolution2DGen())
 
         self.assertEqual(3, len(new_chromosome))
@@ -84,16 +82,16 @@ class ChromosomeTest(unittest.TestCase):
 
 
 class GeneticClassificationModelTest(unittest.TestCase):
-
     def setUp(self):
         training_set, _ = cifar10.load_data()
         inputs, expected_outputs = training_set
 
-        np_input = np.array(inputs[:3])
-        np_expected = np.array(map(_to_expected_output, expected_outputs)[:3])
+        np_input = np.array(inputs[:30])
+        np_expected = np.array(list(map(_to_expected_output, expected_outputs))[:30])
+        print(np_expected)
 
         estimation = AccuracyEstimation(np_input, np_expected)
-        self.model = GeneticClassificationModel(estimation, population_size=3, generations=1)
+        self.model = GeneticClassificationModel(estimation, population_size=10, generations=30)
 
     # def test_run(self):
     #     self.model.fit()
@@ -103,8 +101,11 @@ class GeneticClassificationModelTest(unittest.TestCase):
             self.model,
             "model-{0}.xlsx".format(datetime.datetime.now()).replace(":", "-"))
 
-        xlsx_model.fit()
+        fitness, gens = xlsx_model.fit()
         xlsx_model.persist()
+
+        print("score = {0}, net = {1}".format(filter, str(gens)))
+
 
 if __name__ == '__main__':
     unittest.main()

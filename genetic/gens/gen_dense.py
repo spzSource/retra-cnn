@@ -11,7 +11,7 @@ class DenseGen(Gen):
     Fully connected layers's gen representation
     """
     def __init__(self):
-        self.size = random.randint(32, 4096)
+        self.size = random.randint(32, 2048)
 
     def __str__(self):
         return "Dense: size={0}".format(self.size)
@@ -21,4 +21,4 @@ class DenseGen(Gen):
         return GenType.Dense
 
     def decode(self):
-        return Dense(self.size)
+        return Dense(self.size, init="lecun_uniform")
