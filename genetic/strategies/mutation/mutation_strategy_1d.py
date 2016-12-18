@@ -6,6 +6,15 @@ from genetic.strategies.mutation.mutation_strategy import MutationStrategy
 
 
 class MutationStrategy1d(MutationStrategy):
+    """
+    Strategy which performs mutation for one-dimension part of layers.
+    """
+    def __init__(self, threshold=3):
+        """
+        :type threshold: the threshold which determines
+        whether we should delete gen or insert a new one.
+        """
+        self.threshold = threshold
 
     def check(self, chromosome):
         left_count, right_count = self._calculate_parts_size(chromosome)
@@ -18,6 +27,7 @@ class MutationStrategy1d(MutationStrategy):
         end_index = lambda: len(target_gens) - 2
 
         if (end_index() - start_index) <= 3:
+            print("Index1: {0}".format(end_index()))
             if target_gens[end_index()].type == GenType.Activation:
                 target_gens.insert(end_index(), ActivationGen())
                 target_gens.insert(end_index(), DenseGen())
@@ -25,6 +35,7 @@ class MutationStrategy1d(MutationStrategy):
                 target_gens.insert(end_index(), DenseGen())
                 target_gens.insert(end_index(), ActivationGen())
         elif (end_index() - start_index) <= 5:
+            print("Index2: {0}".format(end_index()))
             target_gens.pop(end_index())
 
         return Chromosome(target_gens)

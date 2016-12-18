@@ -1,16 +1,32 @@
+from abc import abstractmethod, abstractproperty
+
 import numpy as np
 
-from keras.optimizers import SGD
-from keras.models import Sequential
 from keras.layers import \
     Dense, \
-    Flatten, \
     Convolution2D, \
-    MaxPooling2D, \
-    AveragePooling2D
+    Activation, GlobalAveragePooling2D
+
+from keras.models import Sequential
+from keras.optimizers import SGD
 
 
-class ClassificationModel(object):
+class Classification(object):
+
+    @abstractproperty
+    def model(self):
+        pass
+
+    @abstractmethod
+    def build(self):
+        pass
+
+    @abstractmethod
+    def train(self, training_set):
+        pass
+
+
+class ClassificationModel(Classification):
     """
     Classification classifier.
     It is a convolution neural network which is receive image on input
@@ -18,26 +34,31 @@ class ClassificationModel(object):
     """
 
     def __init__(self):
-        self.model = None
+        self._model = None
+
+    @property
+    def model(self):
+        return self._model
 
     def build(self):
         """
         Builds classification classifier.
         """
-        self.model = Sequential([
-            Convolution2D(8, 5, 5, input_shape=(3, 32, 32), activation="relu"),
-            MaxPooling2D(pool_size=(2, 2), strides=None, border_mode="same"),
-            Convolution2D(16, 3, 3, activation="relu"),
-            MaxPooling2D(pool_size=(2, 2), strides=None, border_mode="same"),
-            Convolution2D(32, 2, 2, activation="relu"),
-            AveragePooling2D(pool_size=(2, 2), strides=None, border_mode="same"),
-            Flatten(),
-            Dense(512, activation="relu"),
-            Dense(10, activation="softmax")
+        self._model = Sequential([
+            Convolution2D(32, 16, 16, input_shape=(3, 32, 32)),
+            Activation(activation="relu"),
+            Convolution2D(16, 8, 8),
+            Activation(activation="relu"),
+            Convolution2D(8, 4, 4),
+            Activation(activation="relu"),
+            GlobalAveragePooling2D(),
+            Activation(activation="relu"),
+            Dense(10),
+            Activation(activation="softmax")
         ])
-        self.model.compile(
+        self._model.compile(
             loss="mse",
-            metrics=["accuracy", "mean_absolute_percentage_error"],
+            metrics=["accuracy"],
             optimizer=SGD(lr=0.03, momentum=0.0, decay=0.0, nesterov=False))
 
     def train(self, training_set):
@@ -56,4 +77,4 @@ class ClassificationModel(object):
         (inputs, expected_outputs) = training_set
         np_input = np.array(inputs)
         np_expected = np.array(map(_to_expected_output, expected_outputs))
-        self.model.fit(np_input, np_expected, batch_size=32, nb_epoch=1000)
+        self._model.fit(np_input, np_expected, batch_size=32, nb_epoch=1000)

@@ -1,9 +1,10 @@
-import gc
 from keras.models import Sequential
 from keras.optimizers import SGD
 
+from genetic.estimation.estimation import ChromosomeEstimation
 
-class AccuracyEstimation(object):
+
+class AccuracyEstimation(ChromosomeEstimation):
 
     def __init__(self, target_input, expected_output):
         self.target_input = target_input

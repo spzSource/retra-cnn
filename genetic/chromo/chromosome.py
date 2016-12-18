@@ -8,10 +8,9 @@ from genetic.gens.gen import Gen
 
 class Chromosome(object):
     """
-    Represents chromo, which is a set of gens.
+    Represents chromosome, which is a set of gens.
     :param initial_gens - initial set of gens for current chromo.
     """
-
     def __init__(self, initial_gens=None, mutations=None):
 
         if initial_gens is None:
@@ -21,8 +20,8 @@ class Chromosome(object):
             import genetic.strategies.mutation
 
             mutations = [
-                genetic.strategies.mutation.MutationStrategy1d(),
-                genetic.strategies.mutation.MutationStrategy2d()
+                genetic.strategies.mutation.MutationStrategy1d(threshold=3),
+                genetic.strategies.mutation.MutationStrategy2d(threshold=3)
             ]
 
         self.gens = initial_gens

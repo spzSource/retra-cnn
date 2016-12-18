@@ -1,4 +1,11 @@
+import datetime
+import numpy as np
+
+from keras.datasets import cifar10
+
+from genetic.estimation.accurancy_estimation import AccuracyEstimation
 from genetic.gens import *
+from genetic.model_genetic_excel import XlsxGeneticClassificationModel
 from genetic.strategies import *
 from genetic.chromo.chromosome import Chromosome
 
@@ -115,3 +122,28 @@ class GeneticClassificationModel(object):
                     break
 
         return chromosome
+
+
+if __name__ == "__main__":
+
+    def _to_expected_output(expected_output):
+        class_number = expected_output[0]
+        result = np.zeros(10, dtype=np.int)
+        result[class_number] = 1
+        return result
+
+    training_set, _ = cifar10.load_data()
+    inputs, expected_outputs = training_set
+
+    np_input = np.array(inputs[:3])
+    np_expected = np.array(map(_to_expected_output, expected_outputs)[:3])
+
+    estimation = AccuracyEstimation(np_input, np_expected)
+    model = GeneticClassificationModel(estimation, population_size=3, generations=1)
+
+    xlsx_model = XlsxGeneticClassificationModel(
+        model,
+        "model-{0}.xlsx".format(datetime.datetime.now()).replace(":", "-"))
+    xlsx_model.fit()
+
+    xlsx_model.persist()

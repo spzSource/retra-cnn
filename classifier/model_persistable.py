@@ -1,8 +1,10 @@
 import os
 import datetime
 
+from classifier import Classification
 
-class PersistableClassificationModel(object):
+
+class PersistableClassificationModel(Classification):
 
     """
     Classification classifier with ability to persist trained classifier on the disk.
@@ -16,6 +18,10 @@ class PersistableClassificationModel(object):
         self.path_to_persist = os.path.join(
             output_dir,
             'model-{0}.mdl'.format(datetime.datetime.now()).replace(":", "-"))
+
+    @property
+    def model(self):
+        return self.originModel.model
 
     def persist(self):
         """
