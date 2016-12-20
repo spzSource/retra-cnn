@@ -27,9 +27,10 @@ class LocalizationModel(object):
         return self._model.layers[0]
 
     def _target_output(self, name):
-        return [layer for layer in self._origin.layers if layer.name is name][0].output
+        return [layer for layer in self._origin.layers if layer.name == name][0].output
 
     def localize(self, source_image, class_number, conv_layer_name, number_of_classes):
+
         self._model = Sequential([
             self.classification_model,
             Lambda(function=lambda x: self._target_category_loss(x, class_number, number_of_classes),
@@ -44,7 +45,7 @@ class LocalizationModel(object):
 
         result = self._combine_with_map(source_image, cam)
 
-        return np.uint8(result)
+        return result
 
     def _target_category_loss(self, x, category_index, n_classes):
         return tf.mul(x, keras.one_hot([category_index], n_classes))
@@ -87,10 +88,10 @@ class LocalizationModel(object):
         source_image = np.minimum(source_image, 255)
 
         cam = cv2.applyColorMap(np.uint8(255 * cam), cv2.COLORMAP_JET)
-        result = np.float32(cam) + np.float32(source_image)
-        result = 255 * cam / np.max(result)
+        cam = np.float32(cam) + np.float32(source_image)
+        result = 255 * cam / np.max(cam)
 
-        return result
+        return np.uint8(result)
 
 if __name__ == "__main__":
 
@@ -107,17 +108,17 @@ if __name__ == "__main__":
     def configure_args():
         parser = argparse.ArgumentParser()
 
-        parser.add_argument("--source_path", action="store")
-        parser.add_argument("--target_path", action="store")
-        parser.add_argument("--labels", action="store")
-        parser.add_argument("--layer_name", action="store", default="block5_pool")
+        parser.add_argument("--source_path", action="store", help="Path to the source image to be processed.")
+        parser.add_argument("--target_path", action="store", help="Path to the target image as a result of processing.")
+        parser.add_argument("--labels", action="store", help="Path to labels of the ImageNet dataset.")
+        parser.add_argument("--layer_name", action="store", default="block5_pool",
+                            help="The name of the layer to be visualized. Default if 'block5_pool'")
 
         parsed_args = parser.parse_args()
 
         return parsed_args
 
     args = configure_args()
-    print(args.target_path)
     preprocessed_input = load_image(args.source_path)
 
     classifier = VGG16(weights="imagenet")
@@ -131,21 +132,21 @@ if __name__ == "__main__":
     model = LocalizationModel(
         classification_model=classifier)
 
-    class_activation_map = model.localize(
+    target = model.localize(
         source_image=preprocessed_input,
         class_number=predicted_class,
         conv_layer_name=args.layer_name,
         number_of_classes=len(labels))
 
     cv2.putText(
-        img=class_activation_map,
+        img=target,
         text=labels[str(predicted_class)],
         org=(10, 10),
         fontFace=cv2.FONT_HERSHEY_PLAIN,
         fontScale=1,
         color=0)
 
-    cv2.imwrite(args.target_path, class_activation_map)
+    cv2.imwrite(args.target_path, target)
 
     img = Image.open(args.target_path)
     img.show()
