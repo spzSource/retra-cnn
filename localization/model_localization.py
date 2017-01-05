@@ -14,6 +14,7 @@ from keras.applications.vgg16 import preprocess_input
 
 
 class LocalizationModel(object):
+
     def __init__(self, classification_model):
         self._model = None
         self.classification_model = classification_model
@@ -29,7 +30,7 @@ class LocalizationModel(object):
     def _target_output(self, name):
         return [layer for layer in self._origin.layers if layer.name == name][0].output
 
-    def localize(self, source_image, class_number, conv_layer_name, number_of_classes):
+    def localize(self, source_image, class_number, conv_layer_name, number_of_classes, sensitivity):
 
         self._model = Sequential([
             self.classification_model,
@@ -43,9 +44,26 @@ class LocalizationModel(object):
         cam = self._calculate_class_activation_map(output, weights)
         cam = self._normalize_cam(cam)
 
-        result = self._combine_with_map(source_image, cam)
+        coordinates = self._determine_coordinates(cam, sensitivity)
+        return cam, coordinates
 
-        return result
+    def _determine_coordinates(self, mask, sensitivity):
+        max_x, max_y = 0, 0
+        min_x, min_y = -1, -1
+
+        for col_index, row in enumerate(mask):
+            for row_index, item in enumerate(row):
+                if item > sensitivity:
+                    if min_x > row_index or min_x < 0:
+                        min_x = row_index
+                    if max_x < row_index:
+                        max_x = row_index
+                    if min_y > col_index or min_y < 0:
+                        min_y = col_index
+                    if max_y < col_index:
+                        max_y = col_index
+
+        return (min_x, min_y), (max_x, max_y)
 
     def _target_category_loss(self, x, category_index, n_classes):
         return tf.mul(x, keras.one_hot([category_index], n_classes))
@@ -82,17 +100,6 @@ class LocalizationModel(object):
 
         return cam
 
-    def _combine_with_map(self, source_image, cam):
-        source_image = source_image[0, :]
-        source_image -= np.min(source_image)
-        source_image = np.minimum(source_image, 255)
-
-        cam = cv2.applyColorMap(np.uint8(255 * cam), cv2.COLORMAP_JET)
-        cam = np.float32(cam) + np.float32(source_image)
-        result = 255 * cam / np.max(cam)
-
-        return np.uint8(result)
-
 if __name__ == "__main__":
 
     import argparse
@@ -105,12 +112,23 @@ if __name__ == "__main__":
         img_array = preprocess_input(img_array)
         return img_array
 
+    def _combine_with_map(source_image, mask):
+        source_image = source_image[0, :]
+        source_image -= np.min(source_image)
+        source_image = np.minimum(source_image, 255)
+
+        mask = cv2.applyColorMap(np.uint8(255 * mask), cv2.COLORMAP_JET)
+        mask = np.float32(mask) + np.float32(source_image)
+        result = 255 * mask / np.max(mask)
+
+        return np.uint8(result)
+
     def configure_args():
         parser = argparse.ArgumentParser()
 
         parser.add_argument("--source_path", action="store", help="Path to the source image to be processed.")
         parser.add_argument("--target_path", action="store", help="Path to the target image as a result of processing.")
-        parser.add_argument("--labels", action="store", help="Path to labels of the ImageNet dataset.")
+        parser.add_argument("--labels", action="store", help="Path to labels of the ImageNet data-set.")
         parser.add_argument("--layer_name", action="store", default="block5_pool",
                             help="The name of the layer to be visualized. Default if 'block5_pool'")
 
@@ -127,16 +145,17 @@ if __name__ == "__main__":
     with open(args.labels) as labels_file:
         labels = json.load(labels_file)
 
-    print("Classified object is: {0}".format(labels[str(predicted_class)]))
-
     model = LocalizationModel(
         classification_model=classifier)
 
-    target = model.localize(
+    cam, cords = model.localize(
         source_image=preprocessed_input,
         class_number=predicted_class,
         conv_layer_name=args.layer_name,
-        number_of_classes=len(labels))
+        number_of_classes=len(labels),
+        sensitivity=0.3)
+
+    target = _combine_with_map(preprocessed_input, cam)
 
     cv2.putText(
         img=target,
@@ -145,6 +164,14 @@ if __name__ == "__main__":
         fontFace=cv2.FONT_HERSHEY_PLAIN,
         fontScale=1,
         color=0)
+
+    cords_start, cords_end = cords
+    cv2.rectangle(
+        img=target,
+        pt1=cords_start,
+        pt2=cords_end,
+        color=(0, 0, 255),
+        thickness=2)
 
     cv2.imwrite(args.target_path, target)
 
