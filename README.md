@@ -13,7 +13,7 @@ Classification:
 
 ![Classification task](https://raw.githubusercontent.com/spzSource/retra-cnn/master/localization/examples/Screen Shot 2017-03-05 at 18.59.17.png)
 
-Genetic algorithm evolution process:
+Evolution process of the genetic algorithm:
 
 ![Evolution process](https://raw.githubusercontent.com/spzSource/retra-cnn/master/localization/examples/Screen Shot 2017-03-05 at 18.59.38.png)
 
