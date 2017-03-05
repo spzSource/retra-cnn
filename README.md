@@ -9,4 +9,11 @@ CIFAR-10 image database, which contains 100 thousand of images devided by 10 cla
 
 ## Live result:
 
-![classification task](https://raw.githubusercontent.com/spzSource/retra-cnn/master/localization/examples/Screen Shot 2017-03-05 at 18.59.17.png)
+Classification:
+
+![Classification task](https://raw.githubusercontent.com/spzSource/retra-cnn/master/localization/examples/Screen Shot 2017-03-05 at 18.59.17.png)
+
+Genetic algorithm evolution process:
+
+![Evolution process](https://raw.githubusercontent.com/spzSource/retra-cnn/master/localization/examples/Screen Shot 2017-03-05 at 18.59.38.png)
+
