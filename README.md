@@ -11,9 +11,9 @@ CIFAR-10 image database, which contains 100 thousand of images devided by 10 cla
 
 Classification and localization in the same model:
 
-![Classification task] (https://raw.githubusercontent.com/spzSource/retra-cnn/master/localization/examples/Screen%20Shot%202017-03-05%20at%2018.59.17.png)
+![Classification task](https://raw.githubusercontent.com/spzSource/retra-cnn/master/localization/examples/Screen%20Shot%202017-03-05%20at%2018.59.17.png)
 
 Evolution process of the genetic algorithm:
 
-![Evolution process](https://raw.githubusercontent.com/spzSource/retra-cnn/master/localization/examples/Screen Shot 2017-03-05 at 18.59.38.png)
+![Evolution process](https://github.com/spzSource/retra-cnn/blob/master/localization/examples/Screen%20Shot%202017-03-05%20at%2018.59.38.png)
 
