@@ -9,7 +9,7 @@ CIFAR-10 image database, which contains 100 thousand of images devided by 10 cla
 
 ## Live result:
 
-Classification and localization in the same model:
+Classification and localization in the single model:
 
 ![Classification task](https://raw.githubusercontent.com/spzSource/retra-cnn/master/localization/examples/Screen%20Shot%202017-03-05%20at%2018.59.17.png)
 
