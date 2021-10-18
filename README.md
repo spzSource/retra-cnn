@@ -5,7 +5,7 @@ CIFAR-10 image database, which contains 100 thousand of images devided by 10 cla
 ## Major results:
 - ability to automate NN-models creation using genetic algorithm;
 - classification quality is in range between 73 - 75 %;
-- model capable to solve localization task using a CAM-model (class activation maps model). Quality is about 50%.
+- model capable to solve localization task using a CAM-model (class activation maps model).
 
 ## Live result:
 
